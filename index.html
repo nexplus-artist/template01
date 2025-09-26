@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NexPlus Artist - Music Distribution & Artist Services</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Social / Wix metadata preserved -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://static.wixstatic.com/media/d7e655_216f91cce746407cbad949b4a44daca8%7Emv2.jpg/v1/fit/w_2500,h_1330,al_c/d7e655_216f91cce746407cbad949b4a44daca8%7Emv2.jpg">
+    <meta name="twitter:title" content="Home | Nexplus Artist">
+
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+
+    <!-- Utilities -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/animejs/lib/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+
+    <style>
+        :root{
+            --bg-900: #030309;        /* darker page background */
+            --panel: rgba(10,11,19,0.72);
+            --card: rgba(20,18,28,0.78);
+            --accent: #7c3aed;
+            --accent-2: #ec4899;
+            --muted: #9ca3af;
+            --glass: rgba(255,255,255,0.03);
+        }
+
+        html,body {
+            height: 100%;
+            background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.06), transparent 10%),
+                        linear-gradient(180deg, rgba(2,2,6,1) 0%, rgba(5,5,8,1) 100%),
+                        var(--bg-900);
+            color: #fff;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            overflow-x: hidden;
+        }
+
+        /* Vanta container sits behind content */
+        .vanta-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            pointer-events: none;
+            opacity: 0.95;
+            transition: opacity 0.6s ease;
+        }
+
+        /* subtle overlay to increase contrast */
+        .site-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                linear-gradient(180deg, rgba(3,6,12,0.55), rgba(3,4,6,0.75));
+            pointer-events: none;
+        }
+
+        /* section baseline styles - 3D ready */
+        section {
+            perspective: 1200px;
+            transform-style: preserve-3d;
+            will-change: transform, opacity;
+        }
+
+        .wrap {
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+
+        /* Cards and panels */
+        .service-card, .panel {
+            background: linear-gradient(180deg, rgba(26,25,32,0.9), rgba(18,16,24,0.72));
+            border: 1px solid rgba(255,255,255,0.03);
+            box-shadow:
+                0 8px 30px rgba(2,6,23,0.7),
+                0 2px 6px rgba(124,58,237,0.06) inset;
+            transition:
+                transform 450ms cubic-bezier(.2,.9,.2,1),
+                box-shadow 300ms ease,
+                filter 300ms ease;
+            transform-origin: center;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        .service-card:hover {
+            box-shadow:
+                0 20px 60px rgba(2,6,23,0.86),
+                0 6px 16px rgba(124,58,237,0.12);
+            transform: translateY(-10px) translateZ(20px) scale(1.02);
+        }
+
+        .card-inner{
+            transform-style: preserve-3d;
+            padding: 1.25rem;
+        }
+
+        /* 3D tilt helper */
+        .tilt {
+            transform-style: preserve-3d;
+            will-change: transform;
+            transition: transform 240ms cubic-bezier(.2,.9,.2,1);
+            perspective: 900px;
+        }
+
+        /* entrance reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(28px) rotateX(7deg) translateZ(-20px);
+            transition: transform 700ms cubic-bezier(.2,.9,.2,1), opacity 700ms ease;
+            transform-origin: center;
+        }
+        .reveal.in-view {
+            opacity: 1;
+            transform: translateY(0) rotateX(0deg) translateZ(0);
+        }
+
+        /* floating hero image */
+        .hero-img {
+            animation: float 7s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        @keyframes float {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-18px) rotateZ(.3deg); }
+        }
+
+        /* thumb/gallery */
+        .thumb {
+            background-size: cover;
+            background-position: center;
+            border-radius: .5rem;
+            width: 100%;
+            height: 72px;
+            box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+            transform: translateZ(6px);
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(90deg, rgba(124,58,237,0.12), rgba(236,72,153,0.06));
+            color: #e9d7ff;
+            padding: .25rem .5rem;
+            border-radius: .375rem;
+            font-weight: 700;
+            font-size: .8rem;
+            letter-spacing: .02em;
+            transform: translateZ(12px);
+        }
+
+        .feature-list li::before {
+            content: '●';
+            display: inline-block;
+            margin-right: .6rem;
+            color: #60a5fa;
+            transform: translateZ(8px);
+        }
+
+        /* interactive focus ring */
+        a:focus {
+            outline: 3px solid rgba(124,58,237,0.22);
+            outline-offset: 3px;
+        }
+
+        /* responsive tweaks */
+        @media (max-width: 767px) {
+            .thumb { height: 56px; }
+            .hero-img { width: 160px; }
+        }
+    </style>
+</head>
+<body class="relative">
+
+    <div id="vanta-bg" class="vanta-bg"></div>
+    <div class="site-overlay"></div>
+
+    <!-- Navigation -->
+    <nav class="bg-transparent fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center py-3">
+                <div class="flex items-center gap-3">
+                    <a href="#" class="flex items-center -ml-1">
+                        <img src="https://static.wixstatic.com/media/d7e655_7e3a423b5f3e488aa5f57fdfd26f6f41~mv2.png" alt="NexPlus logo" class="w-10 h-10 rounded-sm border bg-white/5 shadow-sm">
+                        <span class="ml-3 text-xl font-bold" style="color:var(--accent)">NexPlus Artist</span>
+                    </a>
+                </div>
+
+                <div class="hidden md:flex space-x-6 items-center text-sm">
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors">Home</a>
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors">Services</a>
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors">Testimonials</a>
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors">About</a>
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors">Contact</a>
+                    <a href="#" class="bg-gradient-to-r from-purple-600 to-pink-500 px-4 py-2 rounded-lg hover:from-purple-700 transition-transform transform hover:scale-[1.02]">Login</a>
+                </div>
+
+                <div class="md:hidden">
+                    <button id="mobile-toggle" class="p-2 rounded-md text-gray-300 hover:text-white focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden bg-black/60 backdrop-blur-sm">
+            <div class="px-4 py-4 space-y-2">
+                <a class="block text-gray-200" href="#">Home</a>
+                <a class="block text-gray-200" href="#">Services</a>
+                <a class="block text-gray-200" href="#">Testimonials</a>
+                <a class="block text-gray-200" href="#">About</a>
+                <a class="block text-gray-200" href="#">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="min-h-screen flex items-center justify-center pt-20 pb-12">
+        <div class="text-center max-w-5xl mx-auto px-4 wrap reveal" data-aos="fade-up">
+            <img src="https://static.wixstatic.com/media/11062b_135cd32e9ff046f4ae787258cc5602b8~mv2.jpg" alt="Musician" class="mx-auto mb-6 rounded-md shadow-2xl hero-img w-48 h-auto tilt">
+            <p class="text-sm text-gray-300 mb-2">Elevate your music journey with NEXPLUS</p>
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-4" style="background:linear-gradient(90deg,var(--accent),var(--accent-2)); -webkit-background-clip:text; background-clip:text; color:transparent;">
+                NexPlus: Mapping Your Journey to Stardom
+            </h1>
+            <p class="text-lg md:text-xl mb-6 text-gray-300 max-w-2xl mx-auto">Where Music Meets Strategy — professional distribution, production, and artist services with 100% royalty transparency.</p>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="https://wa.me/918607368524?text=Hey%2C%20I%20got%20redirected%20from%20the%20website%20and%20I%27m%20interested%20in%20music%20production" target="_blank" rel="noopener" class="bg-gradient-to-r from-purple-600 to-pink-500 px-8 py-4 rounded-lg text-lg font-semibold transform transition-transform hover:scale-[1.03]">Get in Touch</a>
+                <a href="https://wa.me/918607368524?text=Hey%2C%20I%20got%20redirected%20from%20the%20website%20and%20I%27m%20interested%20in%20music%20production" target="_blank" rel="noopener" class="border border-purple-500 hover:bg-white/5 px-8 py-4 rounded-lg text-lg font-semibold transition">Chat on WhatsApp</a>
+            </div>
+
+            <p class="mt-6 text-gray-400 italic">"Where Music Meets Strategy"</p>
+        </div>
+    </section>
+
+    <!-- Services (primary) -->
+    <section class="py-20 px-4">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12 reveal">Our Premium Services</h2>
+
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <div class="service-card p-6 rounded-xl tilt reveal" data-service="distribution">
+                    <div class="card-inner">
+                        <div class="text-purple-300 mb-4">
+                            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M12 2v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 18v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 7l8 5 8-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Distribution</h3>
+                        <p class="text-gray-400 mb-4">Get your music on all major platforms — Spotify, Apple Music, YouTube Music and more — with 100% royalty transparency and fast delivery.</p>
+                        <a href="#" class="inline-block mt-2 text-purple-300 hover:underline">Get in touch</a>
+                    </div>
+                </div>
+                <div class="service-card p-6 rounded-xl tilt reveal" data-service="production">
+                    <div class="card-inner">
+                        <div class="text-purple-300 mb-4">
+                            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M3 12h7l3 8 4-16 3 8h1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Music Production</h3>
+                        <p class="text-gray-400 mb-4">Pre-made & custom beats across all genres, affordable pricing, unlimited revisions — crafted by professional producers.</p>
+                        <a href="#" class="inline-block mt-2 text-purple-300 hover:underline">Get in touch</a>
+                    </div>
+                </div>
+
+                <div class="service-card p-6 rounded-xl tilt reveal" data-service="mixing">
+                    <div class="card-inner">
+                        <div class="text-purple-300 mb-4">
+                            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" aria-hidden><path d="M4 6h16M4 12h8m-8 6h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Mixing & Mastering</h3>
+                        <p class="text-gray-400 mb-4">Industry-level mixing & mastering for loud, polished, radio-ready tracks with tight vocals and balanced instrumentation.</p>
+                        <a href="#" class="inline-block mt-2 text-purple-300 hover:underline">Get in touch</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- extended services: VFX, GFX, Promotions -->
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- VFX -->
+                <div class="panel p-6 rounded-xl tilt reveal" aria-labelledby="vfx-title">
+                    <div class="card-inner">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="text-purple-300 flex items-center gap-3">
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M2 12l20-8v16L2 12z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <h4 id="vfx-title" class="text-lg font-semibold">VFX: Visualizers & Reel Edits</h4>
+                            </div>
+                            <span class="badge">Popular</span>
+                        </div>
+
+                        <p class="text-gray-400 mb-3">Audio-reactive visualizers and reel edits tuned to the beat — optimized for Instagram Reels, YouTube Shorts and TikTok.</p>
+
+                        <div class="video-wrap mb-4" style="position:relative;">
+                            <video controls preload="metadata" poster="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop" class="rounded-md" style="width:100%;height:auto;">
+                                <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4">
+                                Your browser does not support HTML video.
+                            </video>
+                        </div>
+
+                        <ul class="text-gray-300 feature-list mb-4">
+                            <li>Beat-synced visualizers</li>
+                            <li>Custom color grading</li>
+                            <li>Short-form edits (15s / 30s / 60s)</li>
+                        </ul>
+
+                        <div class="flex gap-3 items-center">
+                            <a class="text-purple-300 hover:underline" href="https://wa.me/918607368524?text=Hey%2C%20I%20got%20redirected%20from%20the%20website%20and%20I%27m%20interested%20in%20music%20production" target="_blank" rel="noopener">Request VFX</a>
+                            <a class="ml-auto bg-gradient-to-r from-purple-600 to-pink-500 px-3 py-2 rounded-md text-sm" href="https://wa.me/918607368524?text=Hey%2C%20I%20got%20redirected%20from%20the%20website%20and%20I%27m%20interested%20in%20music%20production" target="_blank" rel="noopener">Download Preset</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GFX -->
+                <div class="panel p-6 rounded-xl tilt reveal" aria-labelledby="gfx-title">
+                    <div class="card-inner">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="text-purple-300 flex items-center gap-3">
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/></svg>
+                                <h4 id="gfx-title" class="text-lg font-semibold">GFX: Cover Arts & Thumbnails</h4>
+                            </div>
+                            <span class="badge">Design</span>
+                        </div>
+
+                        <p class="text-gray-400 mb-3">Custom cover art, EP layouts, thumbnails and editable templates — ready for streaming and socials.</p>
+
+                        <div class="grid grid-cols-3 gap-3 mb-4">
+                            <div class="rounded-md overflow-hidden"><img src="https://images.unsplash.com/photo-1526178613053-3f73a7f8b4c8?q=80&w=800&auto=format&fit=crop" alt="" class="w-full h-24 object-cover rounded-md"></div>
+                            <div class="rounded-md overflow-hidden"><img src="https://images.unsplash.com/photo-1505575967455-5a5c3b0e2734?q=80&w=800&auto=format&fit=crop" alt="" class="w-full h-24 object-cover rounded-md"></div>
+                            <div class="rounded-md overflow-hidden"><img src="https://images.unsplash.com/photo-1485579149621-3123dd979885?q=80&w=800&auto=format&fit=crop" alt="" class="w-full h-24 object-cover rounded-md"></div>
+                        </div>
+
+                        <ul class="text-gray-300 feature-list mb-3">
+                            <li>Platform-ready dimensions</li>
+                            <li>Layered PSD/AI on request</li>
+                            <li>Fast revisions (48 hrs)</li>
+                        </ul>
+
+                        <div class="flex gap-3">
+                            <a class="text-purple-300 hover:underline" href="#">Download sample pack</a>
+                            <a class="ml-auto bg-transparent border border-white/6 px-3 py-2 rounded-md text-sm" href="https://wa.me/918607368524?text=Hey%2C%20I%20got%20redirected%20from%20the%20website%20and%20I%27m%20interested%20in%20music%20production" target="_blank" rel="noopener">Order custom art</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Promotions -->
+                <div class="panel p-6 rounded-xl tilt reveal" aria-labelledby="promo-title">
+                    <div class="card-inner">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="text-purple-300 flex items-center gap-3">
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M22 12h-6" stroke="currentColor" stroke-width="1.6"/><path d="M2 7h6v10H2z" stroke="currentColor" stroke-width="1.6"/></svg>
+                                <h4 id="promo-title" class="text-lg font-semibold">Music Promotions</h4>
+                            </div>
+                            <span class="badge">Growth</span>
+                        </div>
+
+                        <p class="text-gray-400 mb-3">Genre-matched organic campaigns across Spotify, YouTube & Instagram — designed to grow real engagement and long-term visibility.</p>
+
+                        <div class="grid grid-cols-1 gap-3 mb-4">
+                            <div class="flex items-center justify-between bg-black/40 p-3 rounded-md">
+                                <div><div class="text-sm text-gray-300 font-semibold">Starter</div><div class="text-xs text-gray-400">Playlist pitching + micro-influencer pushes</div></div>
+                                <div class="text-right"><div class="text-purple-300 font-bold">₹3,999</div><div class="text-xs text-gray-400">2-week</div></div>
+                            </div>
+                            <div class="flex items-center justify-between bg-black/40 p-3 rounded-md">
+                                <div><div class="text-sm text-gray-300 font-semibold">Growth</div><div class="text-xs text-gray-400">Playlist pitching + seeding + ads consult</div></div>
+                                <div class="text-right"><div class="text-purple-300 font-bold">₹8,999</div><div class="text-xs text-gray-400">4-week</div></div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <a class="bg-gradient-to-r from-purple-600 to-pink-500 px-4 py-2 rounded-md" href="https://wa.me/918607368524?text=Hey%2C%20I%20got%20redirected%20from%20the%20website%20and%20I%27m%20interested%20in%20music%20production" target="_blank" rel="noopener">Start Campaign</a>
+                            <a class="px-3 py-2 rounded-md border border-gray-700 text-sm text-gray-300" href="#">Sample Report</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-10 text-center text-gray-400 reveal">
+                <p>Personal Management available for artist development, branding, deal negotiation and day-to-day coordination. Let us handle operations while you create.</p>
+                <a class="inline-block mt-4 text-purple-300 hover:underline" href="https://wa.me/918607368524?text=Hey%2C%20I%20got%20redirected%20from%20the%20website%20and%20I%27m%20interested%20in%20music%20production" target="_blank" rel="noopener">Get in touch for management</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Who We Are -->
+    <section class="py-20 px-4 bg-transparent">
+        <div class="max-w-5xl mx-auto text-center reveal">
+            <h2 class="text-3xl font-bold mb-8">Who We Are</h2>
+            <div class="prose prose-invert max-w-none text-left md:text-center">
+                <p><strong>NexPlus</strong> is a leading music service agency committed to empowering independent artists with affordable, high-quality, and transparent solutions. We prioritize artists’ rights, freedom, and growth — without restrictive contracts or hidden fees.</p>
+                <p>Our core services include worldwide music distribution across all major platforms such as Spotify, Apple Music, YouTube Music, and more — all with 100% royalty transparency and full ownership retained by the artist.</p>
+                <p>We also provide visual branding, promo campaigns, and personalized management — all crafted to scale your music career.</p>
+            </div>
+            <div class="mt-8">
+                <a href="#" class="inline-block bg-gradient-to-r from-purple-600 to-pink-500 px-6 py-3 rounded-lg">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Founder -->
+    <section class="py-16 px-4 bg-transparent">
+        <div class="max-w-4xl mx-auto text-center reveal">
+            <h2 class="text-3xl font-bold mb-6">Meet Our Founder</h2>
+            <div class="flex flex-col items-center">
+                <img src="https://static.wixstatic.com/media/d7e655_14da60356917410298ee48b1133f957a~mv2.jpg" alt="Founder" class="w-40 h-40 rounded-full mb-4 object-cover shadow-2xl tilt">
+                <h3 class="text-2xl font-semibold">Mr. Aman Mukund Kadam</h3>
+                <p class="text-gray-300">Pune, Maharashtra, India</p>
+                <p class="text-gray-400 mt-2">MSME Registered Enterprise</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-transparent py-12 px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="reveal">
+                    <h3 class="text-xl font-semibold mb-4">NexPlus Artist</h3>
+                    <p class="text-gray-400">Professional music services and distribution platform — transparency and artist-first values.</p>
+                </div>
+                <div class="reveal">
+                    <h3 class="text-xl font-semibold mb-4">Contact Us</h3>
+                    <p class="text-gray-400">Phone: +91 86073 68524</p>
+                    <p class="text-gray-400">Email: <a href="mailto:info.nexplusmgmt@gmail.com" class="hover:underline">info.nexplusmgmt@gmail.com</a></p>
+                    <p class="text-gray-400">Location: Pune, Maharashtra, India</p>
+                </div>
+                <div class="reveal">
+                    <h3 class="text-xl font-semibold mb-4">Quick Links</h3>
+                    <a href="#" class="block text-gray-400 hover:text-white mb-2">Services</a>
+                    <a href="#" class="block text-gray-400 hover:text-white mb-2">Testimonials</a>
+                    <a href="#" class="block text-gray-400 hover:text-white mb-2">Contact</a>
+                    <a href="#" class="block text-gray-400 hover:text-white">Earn With Us</a>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+                <p class="text-gray-400">Copyright © 2025 NexPlus - All Rights Reserved</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize AOS & feather icons
+        AOS.init({ duration: 700, once: true, easing: 'cubic-bezier(.2,.9,.2,1)' });
+        feather.replace();
+
+        // Vanta.js: darker, higher contrast net background
+        let vantaEffect = VANTA.NET({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 400.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0x6a21b8,         // lines color (accented purple)
+            backgroundColor: 0x020206, // very dark background
+            maxDistance: 24.00,
+            showDots: true
+        });
+
+        // Mobile menu toggle
+        const mobileToggle = document.getElementById('mobile-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileToggle && mobileToggle.addEventListener('click', function () {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Simple tilt effect for .tilt elements (3D hover)
+        function bindTilt(el) {
+            let rect, w, h, cx, cy;
+            function onMove(e) {
+                rect = el.getBoundingClientRect();
+                w = rect.width; h = rect.height;
+                cx = rect.left + w/2;
+                cy = rect.top + h/2;
+                const x = (e.clientX - cx) / (w/2);
+                const y = (e.clientY - cy) / (h/2);
+                const rotateX = (y * 6) * -1;
+                const rotateY = (x * 10);
+                const tx = -x * 6;
+                const ty = -y * 6;
+                el.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(18px) translate(${tx}px, ${ty}px)`;
+            }
+            function onLeave() {
+                el.style.transform = '';
+            }
+            el.addEventListener('mousemove', onMove);
+            el.addEventListener('mouseleave', onLeave);
+        }
+
+        // Attach tilt to interactive elements
+        document.querySelectorAll('.tilt').forEach(el => bindTilt(el));
+
+        // Intersection Observer to trigger 'in-view' for .reveal elements and animate children with anime.js
+        const reveals = document.querySelectorAll('.reveal');
+        const obs = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+
+                    // small staggered pop using anime.js for children
+                    anime.remove(entry.target);
+                    anime({
+                        targets: entry.target.querySelectorAll('.card-inner, img, h3, h4, p, .thumb'),
+                        translateY: [10,0],
+                        opacity: [0,1],
+                        easing: 'cubicBezier(.2,.9,.2,1)',
+                        duration: 640,
+                        delay: anime.stagger(60)
+                    });
+
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12 });
+
+        reveals.forEach(r => obs.observe(r));
+
+        // Gentle parallax on mouse for page (affects overlay subtle movement)
+        document.addEventListener('mousemove', (e) => {
+            const px = (e.clientX / window.innerWidth - 0.5) * 10;
+            const py = (e.clientY / window.innerHeight - 0.5) * 6;
+            const overlay = document.querySelector('.site-overlay');
+            if (overlay) overlay.style.transform = `translate(${px}px, ${py}px)`;
+        });
+
+        // Clean up VANTA on unload
+        window.addEventListener('beforeunload', () => { if (vantaEffect && vantaEffect.destroy) vantaEffect.destroy(); });
+    </script>
+</body>
+</html>
